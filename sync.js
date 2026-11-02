@@ -25,12 +25,13 @@ function getRemote(){return api('/contents/data.json?t='+Date.now()).then(functi
   return api('/git/blobs/'+j.sha).then(function(r){http(r);return r.json()}).then(function(b){return{sha:j.sha,text:b64u8(b.content)}})})}
 function putRemote(sha){var body={message:'sync '+new Date().toISOString(),content:u8b64(JSON.stringify(S))};if(sha)body.sha=sha;
  return api('/contents/data.json',{method:'PUT',body:JSON.stringify(body)}).then(function(r){if(r.status===409||r.status===422)throw E('conf','conflict');http(r);if(!r.ok)throw E('http','GitHub вернул ошибку '+r.status);return r.json()}).then(function(j){return j.content.sha})}
-function empty(){return !(S.items&&S.items.length)&&!(S.ppl&&Object.keys(S.ppl).length)}
-function replaceWith(d){var o={items:d.items.filter(valid)};if(d.prof&&typeof d.prof==='object')o.prof=d.prof;if(d.uscore&&typeof d.uscore==='object')o.uscore=d.uscore;if(d.ppl&&typeof d.ppl==='object')o.ppl=d.ppl;if(d.off)o.off=d.off;S=o;offered=Array.isArray(S.off)?S.off.slice():[]}
+function empty(){return !(S.items&&S.items.length)&&!(S.coll&&S.coll.length)&&!(S.ppl&&Object.keys(S.ppl).length)}
+function replaceWith(d){var o={items:d.items.filter(valid)};if(d.prof&&typeof d.prof==='object')o.prof=d.prof;if(d.uscore&&typeof d.uscore==='object')o.uscore=d.uscore;if(d.ppl&&typeof d.ppl==='object')o.ppl=d.ppl;if(d.off)o.off=d.off;if(Array.isArray(d.coll))o.coll=d.coll;S=o;offered=Array.isArray(S.off)?S.off.slice():[]}
 function mergeIn(d){if(d.ppl&&typeof d.ppl==='object'){if(!S.ppl)S.ppl={};Object.keys(d.ppl).forEach(function(k){if(!S.ppl[k])S.ppl[k]=d.ppl[k]})}
  if(d.uscore&&typeof d.uscore==='object'){if(!S.uscore)S.uscore={};Object.keys(d.uscore).forEach(function(k){S.uscore[k]=Math.max(us(k),+d.uscore[k]||0)})}
  if(d.prof&&typeof d.prof==='object'&&!(S.prof&&(S.prof.done||Object.keys(S.prof.g||{}).length)))S.prof=d.prof;
  if(Array.isArray(d.off)){d.off.forEach(function(z){if(offered.indexOf(z)<0)offered.push(z)})}
+ if(Array.isArray(d.coll)){var cks={};collArr().forEach(function(z){cks[ckey(z)]=1});d.coll.forEach(function(z){if(z&&z.t&&!cks[ckey(z)]){S.coll.push(z);cks[ckey(z)]=1}})}
  var ids={},keys={};S.items.forEach(function(x){ids[x.id]=1;keys[kk(x)]=1});d.items.forEach(function(x){if(valid(x)&&!ids[x.id]&&!keys[kk(x)]){S.items.push(x);ids[x.id]=1;keys[kk(x)]=1}})}
 function applied(){applying=true;try{save()}finally{applying=false}try{render()}catch(e){}}
 function run(){return getRemote().then(function(rm){

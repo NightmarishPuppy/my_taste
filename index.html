@@ -180,6 +180,7 @@ textarea{min-height:110px}
 <div class="row" style="margin-top:8px"><button class="pri" id="pfdone">Готово, к подбору</button><button id="pfclr">Сбросить</button></div>
 <div class="m" id="pfmsg"></div></div></div>
 <div class="sec" id="s-sw"><div id="sw"></div></div>
+<div class="sec" id="s-coll"><div id="coll"></div></div>
 <div class="sec" id="s-me">
 <div class="c"><h2>Профиль</h2><div class="m">Здесь всё, что программа знает о вас, и дословно тот запрос, который уходит Клоду. Ничего скрытого нет: Клод получает только этот текст.</div></div>
 <div id="me"></div>
@@ -233,7 +234,7 @@ function renderTags(){syncKind();var box=$('tgc');box.innerHTML='';
  var vis=showAll?sorted:sorted.filter(function(k,i){return i<8||fTags.indexOf(k)>-1});
  chips(box,vis,function(k){return fTags.indexOf(k)>-1},function(k){var i=fTags.indexOf(k);if(i>-1)fTags.splice(i,1);else fTags.push(k);renderTags()});
  if(sorted.length>8){var b=document.createElement('button');b.className='chip';b.textContent=showAll?'Свернуть':'Показать все ('+sorted.length+')';b.onclick=function(){showAll=!showAll;renderTags()};box.appendChild(b)}}
-var TABS=[['pick','Быстрый старт','быстрый подбор предпочтений'],['rate','Оценки','подробно: что смотрели и почему понравилось'],['sw','Свайп','быстрые оценки: произведения, люди, студии'],['want','Хочу','список к просмотру: трейлеры, порядок'],['prof','Вкусы','любимые жанры и форматы, возраст'],['me','Профиль','что собрано о вас и что уходит Клоду'],['data','Данные','сохранить, перенести, загрузить']];
+var TABS=[['pick','Быстрый старт','быстрый подбор предпочтений'],['rate','Оценки','подробно: что смотрели и почему понравилось'],['sw','Свайп','быстрые оценки: произведения, люди, студии'],['coll','Коллекция','что есть у меня: диски, кассеты, файлы'],['want','Хочу','список к просмотру: трейлеры, порядок'],['prof','Вкусы','любимые жанры и форматы, возраст'],['me','Профиль','что собрано о вас и что уходит Клоду'],['data','Данные','сохранить, перенести, загрузить']];
 function $(i){return document.getElementById(i)}
 function esc(s){var d=document.createElement('div');d.textContent=s;return d.innerHTML}
 function norm(s){return s.toLowerCase().replace(/\s*\(\d{4}\)\s*$/,'').replace(/[«»"'’]/g,'').trim()}
@@ -261,8 +262,8 @@ function doImport(mode){
   if(!d||!Array.isArray(d.items))throw 0;
   if(mode==='replace'&&!confirm('Заменить все данные на этом устройстве?'))return;
   var added=0;
-  if(mode==='replace'){S={items:d.items.filter(valid)};if(d.prof&&typeof d.prof==='object')S.prof=d.prof;if(d.uscore&&typeof d.uscore==='object')S.uscore=d.uscore;if(d.ppl&&typeof d.ppl==='object')S.ppl=d.ppl;added=S.items.length}
-  else{if(d.ppl&&typeof d.ppl==='object'){if(!S.ppl)S.ppl={};Object.keys(d.ppl).forEach(function(k){if(!S.ppl[k])S.ppl[k]=d.ppl[k]})}if(d.uscore&&typeof d.uscore==='object'){if(!S.uscore)S.uscore={};Object.keys(d.uscore).forEach(function(k){S.uscore[k]=Math.max(us(k),+d.uscore[k]||0)})}if(d.prof&&typeof d.prof==='object'&&!(S.prof&&(S.prof.done||Object.keys(S.prof.g||{}).length)))S.prof=d.prof;var ids={},keys={};S.items.forEach(function(x){ids[x.id]=1;keys[kk(x)]=1});d.items.forEach(function(x){if(valid(x)&&!ids[x.id]&&!keys[kk(x)]){S.items.push(x);ids[x.id]=1;keys[kk(x)]=1;added++}})}
+  if(mode==='replace'){S={items:d.items.filter(valid)};if(d.prof&&typeof d.prof==='object')S.prof=d.prof;if(d.uscore&&typeof d.uscore==='object')S.uscore=d.uscore;if(d.ppl&&typeof d.ppl==='object')S.ppl=d.ppl;if(Array.isArray(d.coll))S.coll=d.coll;added=S.items.length}
+  else{if(d.ppl&&typeof d.ppl==='object'){if(!S.ppl)S.ppl={};Object.keys(d.ppl).forEach(function(k){if(!S.ppl[k])S.ppl[k]=d.ppl[k]})}if(d.uscore&&typeof d.uscore==='object'){if(!S.uscore)S.uscore={};Object.keys(d.uscore).forEach(function(k){S.uscore[k]=Math.max(us(k),+d.uscore[k]||0)})}if(d.prof&&typeof d.prof==='object'&&!(S.prof&&(S.prof.done||Object.keys(S.prof.g||{}).length)))S.prof=d.prof;if(Array.isArray(d.coll)){var cks={};collArr().forEach(function(z){cks[ckey(z)]=1});d.coll.forEach(function(z){if(z&&z.t&&!cks[ckey(z)]){S.coll.push(z);cks[ckey(z)]=1;added++}})}var ids={},keys={};S.items.forEach(function(x){ids[x.id]=1;keys[kk(x)]=1});d.items.forEach(function(x){if(valid(x)&&!ids[x.id]&&!keys[kk(x)]){S.items.push(x);ids[x.id]=1;keys[kk(x)]=1;added++}})}
   save();render();$('imp').value='';$('imsg').textContent=(mode==='replace'?'Загружено записей: ':'Добавлено новых записей: ')+added;
  }).catch(function(){$('imsg').textContent='Не удалось прочитать. Проверьте, что код вставлен целиком.'})}
 function uid(){return Date.now().toString(36)+Math.random().toString(36).slice(2,6)}
@@ -743,7 +744,79 @@ function renderMe(){var B=$('me');if(!B||tab!=='me')return;B.innerHTML='';
  B.appendChild(mePrompt('Запрос «Быстрый старт» (кнопка «Клод, подбери»)',bp,'В этот запрос входят все ваши записи целиком, с причинами. Настроение и количество берутся из вкладки «Быстрый старт».'));
  var cp='';try{cp=calPrompt()}catch(e){cp='(не удалось собрать)'}
  B.appendChild(mePrompt('Запрос автопредложения (вкладка «Оценки»)',cp,'Сюда входят сводка причин, заявленные вкусы и названия ваших последних записей, чтобы не повторять. Режим и тип берутся из карточки автопредложения.'))}
-function render(){renderCal();fillUnis();renderTabs();renderForm();renderRate();renderWant();renderPick();renderQuick();renderProf();renderSw();renderMe();renderData();renderBk()}
+
+/* ===== Моя коллекция ===== */
+var MEDIA=['Blu-ray','DVD','VHS','Файл / сервер','Другое'],CTYPES=['Фильм','Сериал','Мультфильм / мультсериал','Аниме'];
+var cl={t:'',y:'',ty:'Фильм',md:'DVD',lc:'',q:'',f:'',lim:30,bulk:'',pmd:'',pty:'',phide:true,pk:[],po:0,skip:{},msg:'',sug:[]};
+function collArr(){if(!S.coll)S.coll=[];return S.coll}
+function ckey(c){return norm(c.t)+'|'+(c.y||'')+'|'+(c.m||'')}
+function refByName(t,y){var R=refData();if(!R.nm){R.nm={};R.films.slice().sort(function(a,b){return b.v-a.v}).forEach(function(f){var k=norm(f.n);(R.nm[k]=R.nm[k]||[]).push(f)})}
+ var a=R.nm[norm(t)];if(!a)return{f:null,n:0};if(y){var b=a.filter(function(f){return f.y===y});return{f:b[0]||null,n:b.length}}return{f:a[0],n:a.length}}
+function collSug(q){q=norm(q);if(q.length<2)return[];var R=refData(),a=[],b=[];R.films.forEach(function(f){var n=norm(f.n);var i=n.indexOf(q);if(i===0)a.push(f);else if(i>0)b.push(f)});
+ var s=function(x,y){return y.v-x.v};return a.sort(s).concat(b.sort(s)).slice(0,8)}
+function collAdd(t,y,ty,m,lc){t=(t||'').trim();if(!t)return 'empty';var c={id:uid(),t:t,y:y||'',type:ty||'Фильм',m:m,loc:(lc||'').trim(),ts:Date.now()};
+ var A=collArr();if(A.some(function(z){return ckey(z)===ckey(c)}))return 'dup';A.push(c);return 'ok'}
+function collParse(txt,ty,m,lc){var ok=0,dup=0,A=txt.split('\n');A.forEach(function(l){l=l.replace(/^\s*(\d+[.)]|[-•*])\s*/,'').trim();if(!l)return;
+  var y='',t=l,mm=l.match(/^(.*?)[\s,;]*[(\[]?((?:19|20)\d\d)[)\]]?\s*$/);if(mm&&mm[1].trim()){t=mm[1].trim();y=mm[2]}
+  var r=refByName(t,y),tt=ty;if(r.f&&(y||r.n===1)){t=r.f.n;y=r.f.y;tt=refType(r.f)}
+  var res=collAdd(t,y,tt,m,lc);if(res==='ok')ok++;else if(res==='dup')dup++});return{ok:ok,dup:dup}}
+function ratedItem(c){var x=find(c.t,c.y);return x&&(ST[x.st]||QS[x.st])?x:null}
+function collRate(c,st){var x=find(c.t,c.y);if(x){x.st=st}else{S.items.push({id:uid(),t:c.t,y:c.y||'',type:c.type||'Фильм',k:(c.type==='Фильм'||c.type==='Сериал'||!c.type)?'Художественный':'',st:st,tags:[],note:''})}save();render()}
+function collPick(){var T=swTaste(),L=Math.LN10,out=[],seen={};
+ collArr().forEach(function(c){if(cl.pmd&&c.m!==cl.pmd)return;if(cl.pty&&c.type!==cl.pty)return;if(cl.skip[c.id])return;var sk=norm(c.t)+'|'+(c.y||'');if(seen[sk])return;seen[sk]=1;
+  var x=find(c.t,c.y);if(cl.phide&&x&&(ST[x.st]||QS[x.st]))return;if(x&&x.st==='want'){}
+  var r=refByName(c.t,c.y),f=r.f,z=f?swRefSim(f,T):{s:0,why:''};
+  out.push({c:c,f:f,why:z.why,s:z.s+(f?Math.log(f.v)/L*0.25:0)+Math.random()*0.6+(x&&x.st==='want'?0.5:0)})});
+ out.sort(function(a,b){return b.s-a.s});return out}
+function el(tag,cls,txt){var e=document.createElement(tag);if(cls)e.className=cls;if(txt!==undefined)e.textContent=txt;return e}
+function csel(opts,cur,fn,lab){var s=document.createElement('select');opts.forEach(function(o){var p=document.createElement('option');p.value=o;p.textContent=lab&&lab[o]!==undefined?lab[o]:o;if(o===cur)p.selected=true;s.appendChild(p)});s.onchange=function(){fn(s.value)};return s}
+function renderColl(){if(tab!=='coll')return;var B=$('coll');if(!B)return;B.innerHTML='';var A=collArr();
+ var h=el('div','c');h.appendChild(el('h2','','Моя коллекция: '+A.length));
+ h.appendChild(el('div','m','То, что у вас есть: диски, кассеты, файлы на сервере. Работает без интернета. Здесь можно подобрать, что посмотреть из имеющегося, с учётом вашего вкуса.'));B.appendChild(h);
+ /* подбор */
+ var pk=el('div','c');pk.appendChild(el('h2','','Что посмотреть из коллекции'));
+ var r1=el('div','row');r1.appendChild(csel([''].concat(MEDIA),cl.pmd,function(v){cl.pmd=v;cl.po=0;cl.pk=[];renderColl()},{'':'Любой носитель'}));
+ r1.appendChild(csel([''].concat(CTYPES),cl.pty,function(v){cl.pty=v;cl.po=0;cl.pk=[];renderColl()},{'':'Любой тип'}));pk.appendChild(r1);
+ var lb=el('label','m');var ch=document.createElement('input');ch.type='checkbox';ch.checked=cl.phide;ch.style.cssText='width:auto;margin:0 8px 0 0';ch.onchange=function(){cl.phide=ch.checked;cl.pk=[];cl.po=0;renderColl()};lb.appendChild(ch);lb.appendChild(document.createTextNode('Не показывать то, что уже оценено'));pk.appendChild(lb);
+ var go=el('button','pri',cl.pk.length?'Ещё варианты':'Подобрать');go.onclick=function(){if(!cl.pk.length||cl.po+5>=cl.pk.length){cl.pk=collPick();cl.po=0}else cl.po+=5;renderColl()};pk.appendChild(go);
+ if(cl.pk.length){var sh=cl.pk.slice(cl.po,cl.po+5);sh.forEach(function(o){var c=o.c,d=el('div','c');d.style.margin='8px 0';var t=el('div','',c.t+(c.y?' ('+c.y+')':''));t.style.cssText='font-weight:600;font-size:17px';d.appendChild(t);
+   var same=collArr().filter(function(z){return norm(z.t)===norm(c.t)&&(z.y||'')===(c.y||'')}),inf=[same.map(function(z){return z.m+(z.loc?' ('+z.loc+')':'')}).join(', '),c.type].filter(Boolean).join(' · ');if(o.f){inf+=(inf?' · ':'')+(o.f.g.slice(0,3).map(function(g){return GRU[g]||g.toLowerCase()}).join(', '))+(o.f.d.length?' · реж. '+o.f.d[0]:'')}d.appendChild(el('div','m',inf));
+   d.appendChild(el('div','m',o.why?'Похоже на ваш вкус: '+o.why:(o.f?'Совпадений с вашим вкусом пока мало':'Нет в справочнике, оценить совпадение с вкусом не могу')));
+   var rw=el('div','row');[['👍 Понравилось','like'],['😐 Так себе','meh'],['👎 Не понравилось','bad']].forEach(function(z){var b=el('button','',z[0]);b.onclick=function(){collRate(c,z[1]);cl.pk=cl.pk.filter(function(q){return q.c!==c})};rw.appendChild(b)});
+   var sk=el('button','','Не сейчас');sk.onclick=function(){cl.skip[c.id]=1;cl.pk=cl.pk.filter(function(q){return q.c!==c});renderColl()};rw.appendChild(sk);d.appendChild(rw);pk.appendChild(d)})}
+ B.appendChild(pk);
+ /* добавить */
+ var ad=el('div','c');ad.appendChild(el('h2','','Добавить'));
+ var ti=document.createElement('input');ti.placeholder='Название (начните вводить, подскажу из справочника)';ti.value=cl.t;ti.autocomplete='off';ti.setAttribute('autocapitalize','off');
+ var sg=el('div','');
+ function showSug(){sg.innerHTML='';cl.sug.forEach(function(f){var b=el('button','chip',f.n+' ('+f.y+')');b.onclick=function(){cl.t=f.n;cl.y=f.y;cl.ty=refType(f);cl.sug=[];renderColl()};sg.appendChild(b)})}
+ ti.oninput=function(){cl.t=ti.value;cl.sug=collSug(cl.t);showSug()};ad.appendChild(ti);ad.appendChild(sg);showSug();
+ var yi=document.createElement('input');yi.placeholder='Год (необязательно)';yi.inputMode='numeric';yi.value=cl.y;yi.oninput=function(){cl.y=yi.value.replace(/\D/g,'').slice(0,4)};ad.appendChild(yi);
+ var r2=el('div','row');r2.appendChild(csel(CTYPES,cl.ty,function(v){cl.ty=v}));r2.appendChild(csel(MEDIA,cl.md,function(v){cl.md=v}));ad.appendChild(r2);
+ var li=document.createElement('input');li.placeholder='Где лежит (полка, коробка, диск, папка): необязательно';li.value=cl.lc;li.setAttribute('list','cllocs');li.oninput=function(){cl.lc=li.value};ad.appendChild(li);
+ var dl=document.createElement('datalist');dl.id='cllocs';var ls={};A.forEach(function(c){if(c.loc)ls[c.loc]=1});Object.keys(ls).forEach(function(k){var o=document.createElement('option');o.value=k;dl.appendChild(o)});ad.appendChild(dl);
+ var ab=el('button','pri','Добавить в коллекцию');var msg=el('div','m',cl.msg);cl.msg='';
+ ab.onclick=function(){var r=collAdd(cl.t,cl.y,cl.ty,cl.md,cl.lc);if(r==='empty'){msg.textContent='Введите название'}else if(r==='dup'){msg.textContent='Такая запись уже есть в коллекции'}else{cl.msg='Добавлено: '+cl.t;cl.t='';cl.y='';cl.sug=[];save();render()}};
+ var r3=el('div','row');r3.appendChild(ab);ad.appendChild(r3);ad.appendChild(msg);
+ var dt=document.createElement('details');dt.appendChild(el('summary','','Добавить списком'));dt.appendChild(el('div','m','По одному названию на строке, год можно в конце: «Ронин 1998». Тип подставится из справочника, если фильм там найден. Носитель и место берутся из полей выше.'));
+ var ta=document.createElement('textarea');ta.value=cl.bulk;ta.oninput=function(){cl.bulk=ta.value};dt.appendChild(ta);var bm=el('div','m','');
+ var bb=el('button','','Добавить все');bb.onclick=function(){if(!cl.bulk.trim()){bm.textContent='Список пуст';return}var r=collParse(cl.bulk,cl.ty,cl.md,cl.lc);cl.bulk='';cl.msg='Добавлено списком: '+r.ok+(r.dup?', уже были: '+r.dup:'');save();render()};
+ dt.appendChild(bb);dt.appendChild(bm);ad.appendChild(dt);B.appendChild(ad);
+ /* список */
+ var ls2=el('div','c');ls2.appendChild(el('h2','','Список'));
+ var mc={};A.forEach(function(c){mc[c.m]=(mc[c.m]||0)+1});var fr=el('div','row');
+ [''].concat(MEDIA).forEach(function(k){var n=k?mc[k]||0:A.length;if(k&&!n)return;var b=el('button','chip'+(cl.f===k?' on':''),(k||'Все')+' '+n);b.onclick=function(){cl.f=k;cl.lim=30;renderColl()};fr.appendChild(b)});ls2.appendChild(fr);
+ var si=document.createElement('input');si.placeholder='Поиск по названию или месту';si.value=cl.q;si.oninput=function(){cl.q=si.value;cl.lim=30;lst()};ls2.appendChild(si);
+ var box=el('div','');ls2.appendChild(box);
+ function lst(){box.innerHTML='';var q=norm(cl.q||''),a=A.filter(function(c){return(!cl.f||c.m===cl.f)&&(!q||norm(c.t).indexOf(q)>-1||norm(c.loc||'').indexOf(q)>-1)}).sort(function(x,y){return x.t.localeCompare(y.t,'ru')});
+  if(!a.length){box.appendChild(el('div','m',A.length?'Ничего не найдено':'Коллекция пуста. Добавьте первую запись выше.'));return}
+  a.slice(0,cl.lim).forEach(function(c){var d=el('div','');d.style.cssText='padding:8px 0;border-top:1px solid var(--bd)';var t=el('div','',c.t+(c.y?' ('+c.y+')':''));t.style.fontWeight='600';var x=ratedItem(c);
+   if(x){var bd=el('span','badge',(ST[x.st]||QS[x.st]));t.appendChild(bd)}d.appendChild(t);d.appendChild(el('div','m',[c.m,c.loc,c.type].filter(Boolean).join(' · ')));
+   var rb=el('div','row');var del=el('button','','Удалить');del.onclick=function(){if(!confirm('Удалить из коллекции: '+c.t+'?'))return;S.coll=S.coll.filter(function(z){return z.id!==c.id});save();render()};rb.appendChild(del);
+   var ed=el('button','','Изменить место');ed.onclick=function(){var v=prompt('Где лежит «'+c.t+'»:',c.loc||'');if(v===null)return;c.loc=v.trim();save();render()};rb.appendChild(ed);d.appendChild(rb);box.appendChild(d)});
+  if(a.length>cl.lim){var mb=el('button','','Показать ещё ('+(a.length-cl.lim)+')');mb.onclick=function(){cl.lim+=30;lst()};box.appendChild(mb)}}
+ lst();B.appendChild(ls2)}
+function render(){renderColl();renderCal();fillUnis();renderTabs();renderForm();renderRate();renderWant();renderPick();renderQuick();renderProf();renderSw();renderMe();renderData();renderBk()}
 
 $('save').onclick=function(){
  var t=$('t').value.trim(),tp=$('type').value;if(!t){$('fmsg').textContent='Введите название';return}

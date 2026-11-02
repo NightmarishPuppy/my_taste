@@ -1,5 +1,5 @@
 // Служебный скрипт: офлайн-режим. Страница берётся из сети, при отсутствии сети из кэша.
-var V='moy-vkus-v5';
+var V='moy-vkus-v6';
 var FILES=['./','./index.html','./manifest.webmanifest','./sync.js','./inst.js','./icon-192.png','./icon-512.png','./apple-touch-icon.png'];
 self.addEventListener('install',function(e){e.waitUntil(caches.open(V).then(function(c){return c.addAll(FILES)}).then(function(){return self.skipWaiting()}))});
 self.addEventListener('activate',function(e){e.waitUntil(caches.keys().then(function(k){return Promise.all(k.filter(function(n){return n!==V}).map(function(n){return caches.delete(n)}))}).then(function(){return self.clients.claim()}))});
