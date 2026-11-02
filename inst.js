@@ -30,5 +30,23 @@ function open(){var s=steps();if(!ov){ov=document.createElement('div');ov.id='in
  var x=document.createElement('button');x.textContent='Закрыть';x.onclick=closeDlg;row.appendChild(x);ov.className='on'}
 function upd(){if(!bar)return;bar.style.display=standalone?'none':''}
 function init(){var tabs=document.getElementById('tabs');if(!tabs||standalone)return;bar=document.createElement('div');bar.id='instbar';var b=document.createElement('button');b.textContent='📲 Установить приложение на экран устройства';b.onclick=open;bar.appendChild(b);tabs.parentNode.insertBefore(bar,tabs);upd()}
+
+/* iPad/iPhone, запуск с иконки: внешние ссылки по умолчанию открываются во встроенном окне, которое часто остаётся белым.
+   Даём выбор: открыть в Safari / скопировать / открыть здесь. Больше нигде логика не меняется. */
+if(iOS&&standalone){
+ var lov=null;
+ function lclose(){if(lov)lov.className=''}
+ function lopen(url){if(!lov){lov=document.createElement('div');lov.id='instov';lov.onclick=function(e){if(e.target===lov)lclose()};document.body.appendChild(lov)}
+  var host=url.replace(/^https?:\/\//,'').split('/')[0];
+  lov.innerHTML='<div id="instdlg"><h2>Открыть ссылку</h2><div class="m"></div><div class="row"></div></div>';
+  lov.querySelector('.m').textContent=host;var row=lov.querySelector('.row');
+  var b1=document.createElement('button');b1.className='pri';b1.textContent='Открыть в Safari';b1.onclick=function(){lclose();var a=document.createElement('a');a.href='x-safari-'+url;a.rel='noopener';document.body.appendChild(a);a.click();setTimeout(function(){a.remove()},500)};row.appendChild(b1);
+  var b2=document.createElement('button');b2.textContent='Скопировать ссылку';b2.onclick=function(){try{navigator.clipboard.writeText(url).then(function(){b2.textContent='Скопировано'})}catch(e){}};row.appendChild(b2);
+  var b3=document.createElement('button');b3.textContent='Открыть здесь';b3.onclick=function(){lclose();window.open(url,'_blank','noopener')};row.appendChild(b3);
+  var b4=document.createElement('button');b4.textContent='Отмена';b4.onclick=lclose;row.appendChild(b4);
+  lov.className='on'}
+ document.addEventListener('click',function(e){var a=e.target.closest&&e.target.closest('a[href]');if(!a||e.defaultPrevented)return;var h=a.href||'';if(!/^https?:/i.test(h))return;
+  try{if(new URL(h).host===location.host)return}catch(x){return}
+  e.preventDefault();e.stopPropagation();lopen(h)},true)}
 init();
 })();
