@@ -48,7 +48,7 @@ function decorate(el,x,mode){if(!key||bad||!el)return;var tk={n:x.n||x.t,t:x.t,y
   var right=document.createElement('div');right.style.cssText='flex:1;min-width:0';
   var bits=[];if(r.ti&&norm2(r.ti)!==norm2(x.n||x.t)&&!x.ru)bits.push('<div class="m" style="margin:0 0 4px"><b>'+esc(r.ti)+'</b></div>');
   if(r.ov)bits.push('<div class="m" style="margin:0 0 6px">'+esc(r.ov.length>420?r.ov.slice(0,417)+'…':r.ov)+'</div>');
-  if(r.tr)bits.push('<div class="m" style="margin:0"><a href="https://www.youtube.com/watch?v='+esc(r.tr)+'" target="_blank" rel="noopener noreferrer">▶ Трейлер на YouTube</a></div>');
+  if(r.tr){var old=el.querySelector('a.tl');if(old){old.href='https://www.youtube.com/watch?v='+r.tr}else bits.push('<div class="m" style="margin:0"><a href="https://www.youtube.com/watch?v='+esc(r.tr)+'" target="_blank" rel="noopener noreferrer">▶ Трейлер на YouTube</a></div>')}
   right.innerHTML=bits.join('');
   var done=function(src){if(src){var im=document.createElement('img');im.alt='';im.draggable=false;im.src=src;im.style.cssText='width:96px;max-width:30%;border-radius:8px;flex:none;pointer-events:none;-webkit-user-drag:none;background:var(--bd)';box.appendChild(im)}
    box.appendChild(right);if(!src&&!bits.length)return;

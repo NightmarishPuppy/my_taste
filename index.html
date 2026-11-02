@@ -4,7 +4,7 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <title>Мой вкус</title>
-<script>window.APP_VER='2026-11-02 22:57'</script>
+<script>window.APP_VER='2026-11-02 23:37'</script>
 <link rel="manifest" href="manifest.webmanifest">
 <link rel="apple-touch-icon" href="apple-touch-icon.png">
 <meta name="theme-color" content="#3d5afe">
@@ -634,8 +634,8 @@ function refData(){if(REF)return REF;var a=[];try{a=JSON.parse(document.getEleme
  var mn={dir:1,wri:2,comp:2,act:2,stu:3};
  Object.keys(B).forEach(function(k){REF.pl[k]=Object.keys(B[k]).map(function(n){return B[k][n]}).filter(function(o){return o.f.length>=mn[k]}).sort(function(a,b){return b.v-a.v})});
  return REF}
-function baseFilms(a,sp){var kk={};a.forEach(function(r){kk[norm(String(r[0]))+'|'+r[1]]=r});
- return window.BASE_ROWS.map(function(r){var o=kk[norm(r[1])+'|'+r[2]],kw=o&&o[11]?sp(o[11]):[];return{n:r[1],y:String(r[2]),v:r[3],r:r[4],l:r[5]===3?'ja':'en',ty:r[5],g:r[6]?r[6].split(','):[],d:sp(r[7]),w:sp(r[8]),c:sp(r[9]),m:sp(r[10]),s:o?(o[10]||''):'',kw:kw,ru:r[11]||'',ey:r[12]||0,id:r[0]}})}
+function baseFilms(a,sp){var kk={},uq=function(l){return l.filter(function(x,i){return l.indexOf(x)===i})};a.forEach(function(r){kk[norm(String(r[0]))+'|'+r[1]]=r});
+ return window.BASE_ROWS.map(function(r){var o=kk[norm(r[1])+'|'+r[2]],kw=o&&o[11]?sp(o[11]):[];return{n:r[1],y:String(r[2]),v:r[3],r:r[4],l:r[5]===3?'ja':'en',ty:r[5],g:r[6]?r[6].split(','):[],d:uq(sp(r[7])),w:uq(sp(r[8])),c:uq(sp(r[9])),m:uq(sp(r[10])),s:o?(o[10]||''):'',kw:kw,ru:r[11]||'',ey:r[12]||0,id:r[0]}})}
 function refType(f){if(f.ty!==undefined)return['Фильм','Сериал','Мультфильм / мультсериал','Аниме'][f.ty];if(f.g.indexOf('Animation')>-1)return f.l==='ja'?'Аниме':'Мультфильм / мультсериал';return'Фильм'}
 var SW_REFK=['work','dir','wri','comp','act','stu'],SW_REFC=['Всё','Фильм','Мультфильм / мультсериал','Аниме'];
 function swPop(){return(sw.pop==='ref'&&!swRefOK()&&SM)?'top':sw.pop}
