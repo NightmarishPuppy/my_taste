@@ -1,0 +1,1 @@
+{"v": 1, "built": "2026-11-02", "n": 52107, "chunks": 7, "fields": ["imdb_num", "title", "year", "votes", "rating", "type(0film,1series,2cartoon,3anime)", "genres", "directors", "writers", "cast", "composers", "title_ru", "end_year"]}
