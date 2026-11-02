@@ -12,7 +12,7 @@ function setMsg(t,k){msg=t;kind=k||'';var e=document.getElementById('bsmsg');if(
 function activate(all){var r=[];all.forEach(function(c){for(var i=0;i<c.length;i++)r.push(c[i])});rows=r;window.BASE_ROWS=r;try{REF=null}catch(e){}try{render()}catch(e){}}
 function ready(){return !!rows}
 /* прочитать из хранилища; если чего-то нет, докачать */
-function sync(force){if(busy)return Promise.resolve();busy=true;lock(true);var db=null,all=[];
+function sync(force,explicit){if(busy)return Promise.resolve();busy=true;lock(true);var db=null,all=[],downloaded=0,putFail=false,upToDate=false,hadFlag=false;try{hadFlag=localStorage.getItem('moy_vkus_base_ok')==='1'}catch(e){}
  return idb().catch(function(){return null}).then(function(d){db=d;return d?get(d,'meta'):null}).catch(function(){return null}).then(function(sm){
   var online=navigator.onLine!==false;
   var p=(online?fj('base/meta.json').catch(function(){return null}):Promise.resolve(null));
@@ -20,19 +20,23 @@ function sync(force){if(busy)return Promise.resolve();busy=true;lock(true);var d
    var upd=rm&&(!sm||sm.built!==rm.built||sm.n!==rm.n||sm.v!==rm.v);if(force||upd){return db?clearAll(db).then(function(){return m}):m}return m})})
  .then(function(m){meta=m;var i=0;function next(){if(i>=m.chunks)return Promise.resolve();var k='c'+i;
    return (db?get(db,k):Promise.resolve(null)).catch(function(){return null}).then(function(c){
-    if(c){all[i]=c;i++;setMsg('Читаю базу с устройства… '+i+' из '+m.chunks,'busy');return next()}
+    if(c){all[i]=c;i++;return next()}
     if(navigator.onLine===false)throw new Error('Нет связи: база загружена не полностью ('+i+' из '+m.chunks+' частей). Докачается, когда появится интернет.');
-    setMsg('Загружаю базу… часть '+(i+1)+' из '+m.chunks,'busy');
-    return fj('base/b'+i+'.json').then(function(c){all[i]=c;return db?put(db,k,c).catch(function(){}):0}).then(function(){i++;return next()})})}
-   return next().then(function(){return db?put(db,'meta',m).catch(function(){}):0})})
- .then(function(){activate(all);setMsg('✅ База готова: '+rows.length.toLocaleString('ru-RU')+' произведений (фильмы, сериалы, мультфильмы, аниме). Работает без интернета.','ok')},function(e){
+    downloaded++;setMsg('Загружаю базу… часть '+(i+1)+' из '+m.chunks,'busy');
+    return fj('base/b'+i+'.json').then(function(c){all[i]=c;return db?put(db,k,c).catch(function(){putFail=true}):(putFail=true)}).then(function(){i++;return next()})})}
+   return next().then(function(){return db&&!putFail?put(db,'meta',m).catch(function(){putFail=true}):0})})
+ .then(function(){activate(all);try{if(!putFail)localStorage.setItem('moy_vkus_base_ok','1')}catch(e){}var info=rows.length.toLocaleString('ru-RU')+' произведений, версия от '+(meta&&meta.built||'?');
+   if(putFail)setMsg('⚠️ База загружена ('+info+'), но устройство не даёт её сохранить (мало места или запрет браузера). Она будет скачиваться при каждом запуске, офлайн не заработает.','err');
+   else if(downloaded)setMsg('✅ База загружена: '+info+'. Работает без интернета.'+(hadFlag&&!force&&!explicit?' (Система очистила прошлую копию, поэтому загрузил заново.)':''),'ok');
+   else setMsg('✅ '+(explicit?'Установлена последняя версия базы: ':'База готова: ')+info+'. Работает без интернета.','ok')},function(e){
    var got=all.filter(Boolean);if(got.length&&!rows){activate(got);setMsg('⚠️ Загружена часть базы ('+rows.length.toLocaleString('ru-RU')+' самых известных). '+(e&&e.message||''),'err')}else setMsg('⚠️ '+(e&&e.message||'Не удалось загрузить базу'),'err')})
  .then(function(){busy=false;lock(false)})}
-function lock(b){var x=document.getElementById('bsgo');if(x)x.disabled=b}
+function lock(b){['bsgo','bsre'].forEach(function(id){var x=document.getElementById(id);if(x)x.disabled=b})}
 function ui(){var d=document.getElementById('s-data');if(!d||document.getElementById('bscard'))return;var c=document.createElement('div');c.className='c';c.id='bscard';
- c.innerHTML='<h2>Офлайн-база фильмов и сериалов</h2><div class="m">Около 50 тысяч самых известных фильмов, сериалов, мультфильмов и аниме с жанрами, режиссёрами, актёрами и русскими названиями. Один раз загружается по интернету (около 12 МБ), потом хранится на устройстве и работает без связи. Используется в «Свайпе» и «Коллекции».</div><div class="row"><button id="bsgo">Обновить базу</button></div><div class="m" id="bsmsg"></div>';
+ c.innerHTML='<h2>Офлайн-база фильмов и сериалов</h2><div class="m">Около 50 тысяч самых известных фильмов, сериалов, мультфильмов и аниме с жанрами, режиссёрами, актёрами и русскими названиями. Один раз загружается по интернету (около 12 МБ), потом хранится на устройстве и работает без связи. Используется в «Свайпе» и «Коллекции».</div><div class="row"><button id="bsgo">Проверить обновление</button><button id="bsre">Загрузить заново</button></div><div class="m" id="bsmsg"></div>';
  var sc=document.getElementById('sycard');if(sc&&sc.nextSibling)d.insertBefore(c,sc.nextSibling);else d.insertBefore(c,d.firstChild);
- document.getElementById('bsgo').onclick=function(){sync(true)};if(msg)setMsg(msg,kind)}
+ document.getElementById('bsgo').onclick=function(){if(navigator.onLine===false){setMsg('Нет связи: проверить обновление не получится.','err');return}sync(false,true)};
+ document.getElementById('bsre').onclick=function(){if(confirm('Стереть базу на устройстве и скачать заново (около 12 МБ)?'))sync(true,true)};if(msg)setMsg(msg,kind)}
 ui();
 window.addEventListener('online',function(){if(!ready())sync(false)});
 setTimeout(function(){sync(false)},300);
