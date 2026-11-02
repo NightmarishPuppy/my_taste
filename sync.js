@@ -3,7 +3,9 @@
    менялось и там и тут -> объединяем (ничего не теряется) и отправляем. */
 (function(){
 if(window.claude)return; // внутри Claude внешние запросы запрещены
-var SK='moy_vkus_sync',SY={repo:'',token:'',sha:'',dirty:0,last:0},busy=false,again=false,timer=null,applying=false,lastTry=0,status='',statusErr=false;
+var css=document.createElement('style');css.textContent='.syok{color:#1b7f37!important;font-weight:600}.syerr{color:var(--red)!important;font-weight:600}.sybusy{color:var(--mut)}@media(prefers-color-scheme:dark){.syok{color:#6fdc8c!important}}#sytoast{position:fixed;left:50%;bottom:calc(24px + env(safe-area-inset-bottom,0px));transform:translate(-50%,30px);padding:12px 18px;border-radius:24px;background:#1b7f37;color:#fff;font-weight:600;opacity:0;transition:opacity .25s,transform .25s;z-index:9999;pointer-events:none;max-width:90vw;text-align:center}#sytoast.on{opacity:1;transform:translate(-50%,0)}#sytoast.err{background:#b3261e}.spin{display:inline-block;width:12px;height:12px;border:2px solid currentColor;border-right-color:transparent;border-radius:50%;animation:sps .7s linear infinite;vertical-align:-2px;margin-right:6px}@keyframes sps{to{transform:rotate(360deg)}}';document.head.appendChild(css);
+var toastT=null;function toast(t,err){var e=document.getElementById('sytoast');if(!e){e=document.createElement('div');e.id='sytoast';document.body.appendChild(e)}e.textContent=t;e.className=(err?'err ':'')+'on';clearTimeout(toastT);toastT=setTimeout(function(){e.className=''},2800)}
+var SK='moy_vkus_sync',SY={repo:'',token:'',sha:'',dirty:0,last:0},busy=false,again=false,manual=false,lastMsg='',timer=null,applying=false,lastTry=0,status='',statusErr=false;
 function ld(){try{var o=JSON.parse(localStorage.getItem(SK));if(o&&typeof o==='object')SY={repo:o.repo||'',token:o.token||'',sha:o.sha||'',dirty:+o.dirty||0,last:+o.last||0}}catch(e){}}
 function sv(){try{localStorage.setItem(SK,JSON.stringify(SY))}catch(e){}}
 function on(){return !!(SY.repo&&SY.token)}
@@ -36,12 +38,13 @@ function run(){return getRemote().then(function(rm){
   if(rm.sha===SY.sha){if(SY.dirty>0)return putRemote(rm.sha).then(function(sha){SY.sha=sha;SY.dirty=0;return'Отправлено'});return'Без изменений'}
   if(empty()||(SY.dirty===0&&SY.sha)){replaceWith(d);applied();SY.sha=rm.sha;SY.dirty=0;return'Загружено с GitHub'}
   mergeIn(d);applied();return putRemote(rm.sha).then(function(sha){SY.sha=sha;SY.dirty=0;return'Объединено и отправлено'})})}
-function sync(force){if(!on())return Promise.resolve();if(busy){again=true;return Promise.resolve()}
- if(!force&&Date.now()-lastTry<20000)return Promise.resolve();lastTry=Date.now();busy=true;setSt('Синхронизация…',false);
- return run().catch(function(e){if(e&&e.code==='conf')return run();throw e}).then(function(m){SY.last=Date.now();sv();setSt(m+'. '+new Date(SY.last).toLocaleTimeString('ru-RU'),false)},function(e){sv();var off=!(e&&e.code);setSt(off?'Нет связи с GitHub. Данные сохранены на этом устройстве и отправятся позже.':e.message,!off)}).then(function(){busy=false;if(again){again=false;sync(false)}})}
+function sync(force,man){if(!on())return Promise.resolve();if(busy){again=true;if(man)manual=true;return Promise.resolve()}manual=!!man;
+ if(!force&&Date.now()-lastTry<20000)return Promise.resolve();lastTry=Date.now();busy=true;setSt('Синхронизация…','busy');lock(true);
+ return run().catch(function(e){if(e&&e.code==='conf')return run();throw e}).then(function(m){SY.last=Date.now();sv();var tm=new Date(SY.last).toLocaleTimeString('ru-RU'),same=(m==='Без изменений');if(!same)lastMsg=m+' в '+tm;setSt('✅ '+(same?'Подключено, всё актуально ('+tm+')'+(lastMsg?'. Последнее: '+lastMsg:''):m+' ('+tm+')'),'ok');if(!same||manual)toast('✅ '+(same?'Всё синхронизировано':m),false)},function(e){sv();var off=!(e&&e.code);var em=off?'Нет связи с GitHub. Данные сохранены на этом устройстве и отправятся позже.':e.message;setSt('⚠️ '+em,'err');if(manual||!off)toast('⚠️ '+(off?'Нет связи с GitHub':'Ошибка синхронизации'),true)}).then(function(){busy=false;lock(false);if(again){again=false;sync(false)}})}
 function touch(){if(applying||!on())return;SY.dirty++;sv();clearTimeout(timer);timer=setTimeout(function(){sync(true)},4000)}
 var _save=save;save=function(){var r=_save.apply(this,arguments);touch();return r};
-function setSt(t,err){status=t;statusErr=err;var e=document.getElementById('syst');if(e){e.textContent=t;e.style.color=err?'var(--red)':''}}
+function setSt(t,k){status=t;statusErr=k;var e=document.getElementById('syst');if(!e)return;e.className='m '+(k==='ok'?'syok':k==='err'?'syerr':k==='busy'?'sybusy':'');e.textContent='';if(k==='busy'){var sp=document.createElement('span');sp.className='spin';e.appendChild(sp)}e.appendChild(document.createTextNode(t))}
+function lock(b){['sygo','synow'].forEach(function(id){var x=document.getElementById(id);if(x)x.disabled=b})}
 function ui(){var d=document.getElementById('s-data');if(!d||document.getElementById('sycard'))return;var c=document.createElement('div');c.className='c';c.id='sycard';
  c.innerHTML='<h2>Синхронизация с GitHub</h2><div class="m">Оценки автоматически сохраняются в вашем закрытом репозитории и подтягиваются на другом устройстве. Если данные на устройстве пропали, достаточно снова ввести токен.</div>'
  +'<div class="m">Репозиторий с данными (ИМЯ/РЕПОЗИТОРИЙ):</div><input id="syrepo" placeholder="NightmarishPuppy/my_taste_private" autocapitalize="off" autocorrect="off" spellcheck="false">'
@@ -49,12 +52,12 @@ function ui(){var d=document.getElementById('s-data');if(!d||document.getElement
  +'<div class="row"><button class="pri" id="sygo">Подключить и синхронизировать</button><button id="synow">Синхронизировать сейчас</button><button id="syoff">Отключить</button></div><div class="m" id="syst"></div>';
  d.insertBefore(c,d.firstChild);
  var r=document.getElementById('syrepo'),t=document.getElementById('sytok');r.value=SY.repo;t.value=SY.token?'••••••••':'';
- document.getElementById('sygo').onclick=function(){var rv=r.value.trim().replace(/^https?:\/\/github\.com\//,'').replace(/\/+$/,''),tv=t.value.trim();if(!/^[\w.-]+\/[\w.-]+$/.test(rv)){setSt('Введите имя репозитория в виде ИМЯ/РЕПОЗИТОРИЙ',true);return}
-  if(tv&&tv!=='••••••••')SY.token=tv;if(!SY.token){setSt('Вставьте токен',true);return}
-  if(SY.repo!==rv){SY.sha=''}SY.repo=rv;if(!SY.sha)SY.dirty=Math.max(SY.dirty,1);sv();t.value='••••••••';sync(true)};
- document.getElementById('synow').onclick=function(){if(!on()){setSt('Сначала подключите репозиторий',true);return}sync(true)};
- document.getElementById('syoff').onclick=function(){if(!confirm('Отключить синхронизацию? Данные на устройстве и на GitHub останутся.'))return;SY={repo:'',token:'',sha:'',dirty:0,last:0};sv();r.value='';t.value='';setSt('Синхронизация отключена',false)};
- if(status)setSt(status,statusErr);else if(on()&&SY.last)setSt('Последняя синхронизация: '+new Date(SY.last).toLocaleString('ru-RU'),false)}
+ document.getElementById('sygo').onclick=function(){var rv=r.value.trim().replace(/^https?:\/\/github\.com\//,'').replace(/\/+$/,''),tv=t.value.trim();if(!/^[\w.-]+\/[\w.-]+$/.test(rv)){setSt('Введите имя репозитория в виде ИМЯ/РЕПОЗИТОРИЙ','err');return}
+  if(tv&&tv!=='••••••••')SY.token=tv;if(!SY.token){setSt('Вставьте токен','err');return}
+  if(SY.repo!==rv){SY.sha=''}SY.repo=rv;if(!SY.sha)SY.dirty=Math.max(SY.dirty,1);sv();t.value='••••••••';sync(true,true)};
+ document.getElementById('synow').onclick=function(){if(!on()){setSt('Сначала подключите репозиторий','err');return}sync(true,true)};
+ document.getElementById('syoff').onclick=function(){if(!confirm('Отключить синхронизацию? Данные на устройстве и на GitHub останутся.'))return;SY={repo:'',token:'',sha:'',dirty:0,last:0};sv();r.value='';t.value='';setSt('Синхронизация отключена','')};
+ if(status)setSt(status,statusErr);else if(on()&&SY.last)setSt('✅ Подключено. Последняя синхронизация: '+new Date(SY.last).toLocaleString('ru-RU'),'ok')}
 ld();ui();
 document.addEventListener('visibilitychange',function(){if(!document.hidden)sync(false)});
 window.addEventListener('online',function(){sync(true)});
