@@ -2,7 +2,7 @@
    Ключ хранится только на этом устройстве (localStorage), никуда не отправляется, кроме запросов к TMDB. */
 (function(){
 if(window.claude)return;
-var KK='moy_vkus_tmdb',API='https://api.themoviedb.org/3',IMG='https://image.tmdb.org/t/p/',MAXIMG=250,TTL_OK=90*864e5,TTL_NO=14*864e5;
+var KK='moy_vkus_tmdb',API='https://api.themoviedb.org/3',IMG='https://image.tmdb.org/t/p/',MAXIMG=150,TTL_OK=90*864e5,TTL_NO=14*864e5;
 var key='',db=null,mem={},inflight={},bad=false,msgT='',msgK='';
 try{key=localStorage.getItem(KK)||''}catch(e){}
 function idb(){if(db)return Promise.resolve(db);return new Promise(function(res,rej){try{var r=indexedDB.open('moy_vkus_tmdb',1);r.onupgradeneeded=function(){var d=r.result;d.createObjectStore('tm');d.createObjectStore('img')};r.onsuccess=function(){db=r.result;res(db)};r.onerror=function(){rej(r.error)}}catch(e){rej(e)}})}
@@ -35,7 +35,7 @@ function get(x){if(!key||bad)return Promise.resolve(null);var ck=x.imdb?'i'+x.im
  inflight[ck]=p;return p}
 /* картинки: храним копию на устройстве, чтобы показывались без интернета */
 var urls={};
-function imgSrc(po,w){var u=IMG+(w||'w342')+po;if(urls[u])return Promise.resolve(urls[u]);
+function imgSrc(po,w){var u=IMG+(w||'original')+po;if(urls[u])return Promise.resolve(urls[u]);
  return gt('img',u).then(function(c){if(c&&c.b){return urls[u]=URL.createObjectURL(c.b)}
   if(navigator.onLine===false)return null;
   return fetch(u,{mode:'cors'}).then(function(r){if(!r.ok)throw 0;return r.blob()}).then(function(b){pt('img',u,{b:b,ts:Date.now()}).then(trimImg);return urls[u]=URL.createObjectURL(b)}).catch(function(){return u})})}
@@ -44,13 +44,13 @@ function typeFix(x,r){if(r&&r.ol==='ja'&&r.g.indexOf(16)>-1&&x.type==='Муль�
 function decorate(el,x,mode){if(!key||bad||!el)return;var tk={n:x.n||x.t,t:x.t,y:x.y,type:x.type,imdb:x.imdb};
  get(tk).then(function(r){if(!r||!el.isConnected)return;
   if(x.type!==undefined&&typeFix(x,r)){var ty=el.querySelector('.ty');if(ty&&/мульт/i.test(ty.textContent))ty.textContent='аниме'}
-  var box=document.createElement('div');box.className='tmx';box.style.cssText='display:flex;gap:12px;align-items:flex-start;margin:8px 0;text-align:left';
-  var right=document.createElement('div');right.style.cssText='flex:1;min-width:0';
+  var box=document.createElement('div');box.className='tmx';box.style.cssText='display:flex;flex-direction:column;gap:10px;align-items:center;margin:8px 0;text-align:left';
+  var right=document.createElement('div');right.style.cssText='width:100%;min-width:0';
   var bits=[];if(r.ti&&norm2(r.ti)!==norm2(x.n||x.t)&&!x.ru)bits.push('<div class="m" style="margin:0 0 4px"><b>'+esc(r.ti)+'</b></div>');
   if(r.ov)bits.push('<div class="m" style="margin:0 0 6px">'+esc(r.ov.length>420?r.ov.slice(0,417)+'…':r.ov)+'</div>');
   if(r.tr){var old=el.querySelector('a.tl');if(old){old.href='https://www.youtube.com/watch?v='+r.tr}else bits.push('<div class="m" style="margin:0"><a href="https://www.youtube.com/watch?v='+esc(r.tr)+'" target="_blank" rel="noopener noreferrer">▶ Трейлер на YouTube</a></div>')}
   right.innerHTML=bits.join('');
-  var done=function(src){if(src){var im=document.createElement('img');im.alt='';im.draggable=false;im.src=src;im.style.cssText='width:96px;max-width:30%;border-radius:8px;flex:none;pointer-events:none;-webkit-user-drag:none;background:var(--bd)';box.appendChild(im)}
+  var done=function(src){if(src){var im=document.createElement('img');im.alt='';im.draggable=false;im.src=src;im.style.cssText='width:auto;height:auto;max-width:100%;max-height:70vh;border-radius:8px;flex:none;pointer-events:none;-webkit-user-drag:none;background:var(--bd)';box.appendChild(im)}
    box.appendChild(right);if(!src&&!bits.length)return;
    if(mode==='sw'){var t=el.querySelector('b'),at=t;if(t&&t.nextElementSibling&&/по-русски/.test(t.nextElementSibling.textContent))at=t.nextElementSibling;if(at&&at.parentNode)at.parentNode.insertBefore(box,at.nextSibling);else el.appendChild(box)}
    else{var gb=el.querySelector('.gb')||el;gb.insertBefore(box,gb.children[1]||null)}};
