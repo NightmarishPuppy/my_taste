@@ -38,5 +38,14 @@ if(iOS&&standalone){
   var host='';try{host=new URL(h).host}catch(x){return}
   if(!/(^|\.)wikipedia\.org$/i.test(host))return;
   e.preventDefault();e.stopPropagation();var l=document.createElement('a');l.href='x-safari-'+h;l.rel='noopener';document.body.appendChild(l);l.click();setTimeout(function(){l.remove()},500)},true)}
+
+/* Версия приложения и принудительное обновление (сброс кэша и служебного скрипта) */
+(function(){var d=document.getElementById('s-data');if(!d||document.getElementById('vercard'))return;var c=document.createElement('div');c.className='c';c.id='vercard';
+ c.innerHTML='<h2>Версия приложения</h2><div class="m">Версия: <b>'+(window.APP_VER||'?')+'</b>. Если после обновления на GitHub что-то не поменялось, нажмите кнопку: она сбросит сохранённые копии страницы и загрузит свежие. Оценки и база не затрагиваются.</div><div class="row"><button id="verbtn">Обновить приложение</button></div><div class="m" id="vermsg"></div>';
+ d.appendChild(c);
+ document.getElementById('verbtn').onclick=function(){var m=document.getElementById('vermsg');m.textContent='Обновляю…';
+  var p=[];try{if(navigator.serviceWorker)p.push(navigator.serviceWorker.getRegistrations().then(function(rs){return Promise.all(rs.map(function(r){return r.unregister()}))}))}catch(e){}
+  try{if(window.caches)p.push(caches.keys().then(function(ks){return Promise.all(ks.map(function(k){return caches.delete(k)}))}))}catch(e){}
+  Promise.all(p).catch(function(){}).then(function(){m.textContent='Готово, перезагружаю…';setTimeout(function(){location.replace(location.pathname+'?u='+Date.now())},400)})}})();
 init();
 })();
