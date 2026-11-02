@@ -4,7 +4,7 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <title>Мой вкус</title>
-<script>window.APP_VER='2026-11-02 21:33'</script>
+<script>window.APP_VER='2026-11-02 22:57'</script>
 <link rel="manifest" href="manifest.webmanifest">
 <link rel="apple-touch-icon" href="apple-touch-icon.png">
 <meta name="theme-color" content="#3d5afe">
@@ -430,7 +430,7 @@ function wantCard(x){var d=document.createElement('div');d.className='c med';
   var r=document.createElement('div');r.className='row';
   var w=document.createElement('button');w.textContent=isAud(x.type)?'Прослушал: оценить':'Посмотрел: оценить';w.className='pri';w.onclick=function(){editId=x.id;fSt='';fTags=[];$('t').value=x.t;$('yr').value=x.y||'';$('dir').value=x.d||'';$('uni').value=x.u||'';$('type').value=x.type||'Фильм';syncKind();$('kind').value=x.k||$('kind').options[0].value;$('more').open=!!(x.y||x.d||x.u);$('sez').value=x.s||'';$('note').value='';tab='rate';render();window.scrollTo(0,0)};
   var del=document.createElement('button');del.textContent=x.rw?'Убрать из «Хочу»':'Убрать';del.onclick=function(){if(x.rw&&x.st!=='want'){delete x.rw}else{S.items=S.items.filter(function(y){return y.id!==x.id})}save();render()};
-  var lk=document.createElement('button');lk.textContent=x.rw?(isAud(x.type)?'Переслушал, понравилось':'Пересмотрел, понравилось'):audV('Видел, понравилось',isAud(x.type));lk.onclick=function(){x.st='qlike';x.note='';delete x.rw;save();render()};r.appendChild(w);r.appendChild(lk);r.appendChild(del);gb.appendChild(infoBlock(x));gb.appendChild(r);d.appendChild(gb);d.appendChild(tk);return d}
+  var lk=document.createElement('button');lk.textContent=x.rw?(isAud(x.type)?'Переслушал, понравилось':'Пересмотрел, понравилось'):audV('Видел, понравилось',isAud(x.type));lk.onclick=function(){x.st='qlike';x.note='';delete x.rw;save();render()};r.appendChild(w);r.appendChild(lk);r.appendChild(del);gb.appendChild(infoBlock(x));gb.appendChild(r);d.appendChild(gb);d.appendChild(tk);try{window.TMDB&&TMDB.decorate(d,{n:x.t,y:x.y,type:x.type},'plain')}catch(e){}return d}
 var gm='u',wcol={};try{gm=localStorage.getItem('moy_vkus_wg')||'u'}catch(e){}
 function us(k){return (S.uscore&&S.uscore[k])||0}
 function cmpIn(a,b){var da=a.o!==undefined,db=b.o!==undefined;if(da&&db)return a.o-b.o;if(da!==db)return da?-1:1;return (a.y||'9999').localeCompare(b.y||'9999')||a.t.localeCompare(b.t,'ru')}
@@ -635,7 +635,7 @@ function refData(){if(REF)return REF;var a=[];try{a=JSON.parse(document.getEleme
  Object.keys(B).forEach(function(k){REF.pl[k]=Object.keys(B[k]).map(function(n){return B[k][n]}).filter(function(o){return o.f.length>=mn[k]}).sort(function(a,b){return b.v-a.v})});
  return REF}
 function baseFilms(a,sp){var kk={};a.forEach(function(r){kk[norm(String(r[0]))+'|'+r[1]]=r});
- return window.BASE_ROWS.map(function(r){var o=kk[norm(r[1])+'|'+r[2]],kw=o&&o[11]?sp(o[11]):[];return{n:r[1],y:String(r[2]),v:r[3],r:r[4],l:r[5]===3?'ja':'en',ty:r[5],g:r[6]?r[6].split(','):[],d:sp(r[7]),w:sp(r[8]),c:sp(r[9]),m:sp(r[10]),s:o?(o[10]||''):'',kw:kw,ru:r[11]||'',ey:r[12]||0}})}
+ return window.BASE_ROWS.map(function(r){var o=kk[norm(r[1])+'|'+r[2]],kw=o&&o[11]?sp(o[11]):[];return{n:r[1],y:String(r[2]),v:r[3],r:r[4],l:r[5]===3?'ja':'en',ty:r[5],g:r[6]?r[6].split(','):[],d:sp(r[7]),w:sp(r[8]),c:sp(r[9]),m:sp(r[10]),s:o?(o[10]||''):'',kw:kw,ru:r[11]||'',ey:r[12]||0,id:r[0]}})}
 function refType(f){if(f.ty!==undefined)return['Фильм','Сериал','Мультфильм / мультсериал','Аниме'][f.ty];if(f.g.indexOf('Animation')>-1)return f.l==='ja'?'Аниме':'Мультфильм / мультсериал';return'Фильм'}
 var SW_REFK=['work','dir','wri','comp','act','stu'],SW_REFC=['Всё','Фильм','Мультфильм / мультсериал','Аниме'];
 function swPop(){return(sw.pop==='ref'&&!swRefOK()&&SM)?'top':sw.pop}
@@ -659,7 +659,7 @@ function swRefPick(n){var R=refData(),al=swAllowed().filter(function(k){return S
  var idx={},pat=al.length===1?(al[0]==='work'?['work','work','workp']:[al[0]]):['work','work','workp','dir','work','workp','act','work','work','comp','workp','wri','work','stu'].filter(function(k){return al.indexOf(k==='workp'?'work':k)>-1}),out=[],i=0,guard=0;
  function nxt(k){var a=L[k]||[];idx[k]=idx[k]||0;while(idx[k]<a.length){var o=a[idx[k]++];if(k==='work'||k==='workp'){if(!swKnownW(o)&&!out.some(function(z){return z.k==='work'&&z.n===o.n&&z.y===o.y}))return o}else if(!swKnownP(o.n,k)&&!out.some(function(z){return (SW_PK.indexOf(k)>-1?SW_PK.indexOf(z.k)>-1:z.k===k)&&z.n===o.n}))return o}return null}
  while(out.length<n&&pat.length&&guard++<600){var k=pat[i++%pat.length],o=nxt(k);if(!o){pat=pat.filter(function(z){return z!==k});i=0;continue}
-  if(k==='work'||k==='workp'){k='work';var ty=refType(o);out.push({id:uid(),k:'work',n:o.n,ru:o.ru||'',y:o.y,type:ty,d:'',ref:1,info:o.g.slice(0,3).map(function(g){return GRU[g]||g.toLowerCase()}).join(', ')+(o.d.length?' · реж. '+o.d.join(', '):'')+(o.c.length?' · в ролях: '+o.c.join(', '):'')+' · оценка '+o.r+' ('+o.v+' голосов)'+(o.why?' · похоже на ваш вкус: '+o.why:'')})}
+  if(k==='work'||k==='workp'){k='work';var ty=refType(o);out.push({id:uid(),k:'work',imdb:o.id||0,n:o.n,ru:o.ru||'',y:o.y,type:ty,d:'',ref:1,info:o.g.slice(0,3).map(function(g){return GRU[g]||g.toLowerCase()}).join(', ')+(o.d.length?' · реж. '+o.d.join(', '):'')+(o.c.length?' · в ролях: '+o.c.join(', '):'')+' · оценка '+o.r+' ('+o.v+' голосов)'+(o.why?' · похоже на ваш вкус: '+o.why:'')})}
   else out.push({id:uid(),k:k,n:o.n,ru:'',y:'',type:'',d:'Известные работы: '+o.f.filter(function(f){return sw.cat==='Всё'||refType(f)===sw.cat}).slice(0,3).map(function(f){return f.n}).join(', '),ref:1,info:''})}
  return out}
 function swRefFill(){sw.tried=true;var b=swRefPick(14);if(!b.length){sw.err='В справочнике больше нет новых карточек для этого выбора: всё уже оценено или пропущено. Попробуйте другую категорию или режим «Клод: разное».';renderSw();return}
@@ -726,7 +726,7 @@ function renderSw(){var B=$('sw');if(!B||tab!=='sw')return;B.innerHTML='';
  var card=document.createElement('div');card.className='swc gb'+(sw.fl?' new':'');
  var lbl=x.k==='work'?({'Фильм':'фильм','Сериал':'сериал','Мультфильм / мультсериал':'мультфильм или мультсериал','Аниме':'аниме','Аудиокнига':'аудиокнига'})[x.type]:swKL(x.k);
  card.innerHTML='<div class="swl l">НЕ НРАВИТСЯ</div><div class="swl r">НРАВИТСЯ</div><div class="ty" style="margin-top:34px">'+esc(lbl||'')+'</div><b style="font-size:22px">'+esc(x.n+(x.y?' ('+x.y+')':''))+'</b>'+(x.ru?'<div class="m">по-русски: '+esc(x.ru)+'</div>':'')+(x.d?'<div class="ds">'+esc(x.d)+'</div>':'')+(x.info?'<div class="m" style="margin-top:4px">'+esc(x.info)+'</div>':'')+'<div class="swlk" style="margin-top:8px">'+(x.k==='work'?lnkHtml({t:x.n,y:x.y,type:x.type}):'')+(x.k==='comp'?' <a class="tl" href="https://www.youtube.com/results?search_query='+encodeURIComponent(x.n+' best soundtrack music')+'" target="_blank" rel="noopener noreferrer">🎵 музыка</a>':'')+' <a class="tl" href="https://ru.wikipedia.org/w/index.php?go=Go&search='+encodeURIComponent((x.ru||x.n)+(x.k==='work'&&x.y?' '+x.y:''))+'" target="_blank" rel="noopener noreferrer">📖 Википедия</a></div><div style="height:24px"></div>';
- box.appendChild(card);var stl=document.createElement('div');stl.className='m';stl.style.cssText='margin-top:8px;font-size:12px';stl.textContent='Жест: проведите по карточке пальцем вправо или влево';swBind(card,card.querySelector('.swl.l'),card.querySelector('.swl.r'),stl);
+ box.appendChild(card);try{if(window.TMDB&&x.k==='work'){TMDB.decorate(card,x,'sw');TMDB.prefetch(sw.q.slice(1,4))}}catch(e){}var stl=document.createElement('div');stl.className='m';stl.style.cssText='margin-top:8px;font-size:12px';stl.textContent='Жест: проведите по карточке пальцем вправо или влево';swBind(card,card.querySelector('.swl.l'),card.querySelector('.swl.r'),stl);
  var bt=document.createElement('div');bt.className='swhint';bt.innerHTML='<span class="hn">← 👎</span><span class="hy">👍 →</span>';var nb=document.createElement('button');nb.className='swneu';nb.textContent='😐 Нейтрально';nb.onclick=function(){swAct(3)};bt.insertBefore(nb,bt.lastChild);box.appendChild(bt);
  if(sw.busy){var bb=document.createElement('div');bb.className='m';bb.style.marginTop='8px';bb.textContent='Готовлю следующие…';box.appendChild(bb)}}
 function renderMe(){var B=$('me');if(!B||tab!=='me')return;B.innerHTML='';
@@ -751,7 +751,7 @@ function renderMe(){var B=$('me');if(!B||tab!=='me')return;B.innerHTML='';
 
 /* ===== Моя коллекция ===== */
 var MEDIA=['Blu-ray','DVD','VHS','Файл / сервер','Другое'],CTYPES=['Фильм','Сериал','Мультфильм / мультсериал','Аниме'];
-var cl={t:'',y:'',ru:'',ty:'Фильм',md:'DVD',lc:'',q:'',f:'',lim:30,bulk:'',pmd:'',pty:'',phide:true,pk:[],po:0,skip:{},msg:'',sug:[]};
+var cl={t:'',y:'',ru:'',im:0,ty:'Фильм',md:'DVD',lc:'',q:'',f:'',lim:30,bulk:'',pmd:'',pty:'',phide:true,pk:[],po:0,skip:{},msg:'',sug:[]};
 function collArr(){if(!S.coll)S.coll=[];return S.coll}
 function ckey(c){return norm(c.t)+'|'+(c.y||'')+'|'+(c.m||'')}
 function refNN(f){if(f._nn===undefined){f._nn=norm(f.n);f._nr=f.ru?norm(f.ru):''}}
@@ -759,12 +759,12 @@ function refByName(t,y){var R=refData();if(!R.nm){R.nm={};R.films.slice().sort(f
  var a=R.nm[norm(t)];if(!a)return{f:null,n:0};if(y){var b=a.filter(function(f){return f.y===y});return{f:b[0]||null,n:b.length}}return{f:a[0],n:a.length}}
 function collSug(q){q=norm(q);if(q.length<2)return[];var R=refData(),a=[],b=[];R.films.forEach(function(f){refNN(f);var i=f._nn.indexOf(q),j=f._nr?f._nr.indexOf(q):-1;if(i===0||j===0)a.push(f);else if(i>0||j>0)b.push(f)});
  var s=function(x,y){return y.v-x.v};return a.sort(s).concat(b.sort(s)).slice(0,8)}
-function collAdd(t,y,ty,m,lc,ru){t=(t||'').trim();if(!t)return 'empty';var c={id:uid(),t:t,y:y||'',type:ty||'Фильм',m:m,loc:(lc||'').trim(),ts:Date.now()};if(ru&&norm(ru)!==norm(t))c.ru=ru;
+function collAdd(t,y,ty,m,lc,ru,imdb){t=(t||'').trim();if(!t)return 'empty';var c={id:uid(),t:t,y:y||'',type:ty||'Фильм',m:m,loc:(lc||'').trim(),ts:Date.now()};if(ru&&norm(ru)!==norm(t))c.ru=ru;if(imdb)c.imdb=imdb;
  var A=collArr();if(A.some(function(z){return ckey(z)===ckey(c)}))return 'dup';A.push(c);return 'ok'}
 function collParse(txt,ty,m,lc){var ok=0,dup=0,A=txt.split('\n');A.forEach(function(l){l=l.replace(/^\s*(\d+[.)]|[-•*])\s*/,'').trim();if(!l)return;
   var y='',t=l,mm=l.match(/^(.*?)[\s,;]*[(\[]?((?:19|20)\d\d)[)\]]?\s*$/);if(mm&&mm[1].trim()){t=mm[1].trim();y=mm[2]}
-  var r=refByName(t,y),tt=ty;var ru='';if(r.f&&(y||r.n===1)){t=r.f.n;y=r.f.y;tt=refType(r.f);ru=r.f.ru||''}
-  var res=collAdd(t,y,tt,m,lc,ru);if(res==='ok')ok++;else if(res==='dup')dup++});return{ok:ok,dup:dup}}
+  var r=refByName(t,y),tt=ty;var ru='',im=0;if(r.f&&(y||r.n===1)){t=r.f.n;y=r.f.y;tt=refType(r.f);ru=r.f.ru||'';im=r.f.id||0}
+  var res=collAdd(t,y,tt,m,lc,ru,im);if(res==='ok')ok++;else if(res==='dup')dup++});return{ok:ok,dup:dup}}
 function ratedItem(c){var x=find(c.t,c.y);return x&&(ST[x.st]||QS[x.st])?x:null}
 function collRate(c,st){var x=find(c.t,c.y);if(x){x.st=st}else{S.items.push({id:uid(),t:c.t,y:c.y||'',type:c.type||'Фильм',k:(c.type==='Фильм'||c.type==='Сериал'||!c.type)?'Художественный':'',st:st,tags:[],note:''})}save();render()}
 function collPick(){var T=swTaste(),L=Math.LN10,out=[],seen={};
@@ -788,20 +788,20 @@ function renderColl(){if(tab!=='coll')return;var B=$('coll');if(!B)return;B.inne
    var same=collArr().filter(function(z){return norm(z.t)===norm(c.t)&&(z.y||'')===(c.y||'')}),inf=[same.map(function(z){return z.m+(z.loc?' ('+z.loc+')':'')}).join(', '),c.type].filter(Boolean).join(' · ');if(o.f){inf+=(inf?' · ':'')+(o.f.g.slice(0,3).map(function(g){return GRU[g]||g.toLowerCase()}).join(', '))+(o.f.d.length?' · реж. '+o.f.d[0]:'')}d.appendChild(el('div','m',inf));
    d.appendChild(el('div','m',o.why?'Похоже на ваш вкус: '+o.why:(o.f?'Совпадений с вашим вкусом пока мало':'Нет в справочнике, оценить совпадение с вкусом не могу')));
    var rw=el('div','row');[['👍 Понравилось','like'],['😐 Так себе','meh'],['👎 Не понравилось','bad']].forEach(function(z){var b=el('button','',z[0]);b.onclick=function(){collRate(c,z[1]);cl.pk=cl.pk.filter(function(q){return q.c!==c})};rw.appendChild(b)});
-   var sk=el('button','','Не сейчас');sk.onclick=function(){cl.skip[c.id]=1;cl.pk=cl.pk.filter(function(q){return q.c!==c});renderColl()};rw.appendChild(sk);d.appendChild(rw);pk.appendChild(d)})}
+   var sk=el('button','','Не сейчас');sk.onclick=function(){cl.skip[c.id]=1;cl.pk=cl.pk.filter(function(q){return q.c!==c});renderColl()};rw.appendChild(sk);d.appendChild(rw);try{window.TMDB&&TMDB.decorate(d,{n:c.t,y:c.y,type:c.type,imdb:c.imdb||(o.f&&o.f.id)},'plain')}catch(e){}pk.appendChild(d)})}
  B.appendChild(pk);
  /* добавить */
  var ad=el('div','c');ad.appendChild(el('h2','','Добавить'));
  var ti=document.createElement('input');ti.placeholder='Название (начните вводить, подскажу из справочника)';ti.value=cl.t;ti.autocomplete='off';ti.setAttribute('autocapitalize','off');
  var sg=el('div','');
- function showSug(){sg.innerHTML='';cl.sug.forEach(function(f){var b=el('button','chip',(f.ru&&f.ru!==f.n?f.ru+' / ':'')+f.n+' ('+f.y+')'+(f.ty===1?' · сериал':f.ty===3?' · аниме':f.ty===2?' · мульт':''));b.onclick=function(){cl.t=f.n;cl.y=f.y;cl.ru=f.ru||'';cl.ty=refType(f);cl.sug=[];renderColl()};sg.appendChild(b)})}
- ti.oninput=function(){cl.t=ti.value;cl.ru='';cl.sug=collSug(cl.t);showSug()};ad.appendChild(ti);ad.appendChild(sg);showSug();
+ function showSug(){sg.innerHTML='';cl.sug.forEach(function(f){var b=el('button','chip',(f.ru&&f.ru!==f.n?f.ru+' / ':'')+f.n+' ('+f.y+')'+(f.ty===1?' · сериал':f.ty===3?' · аниме':f.ty===2?' · мульт':''));b.onclick=function(){cl.t=f.n;cl.y=f.y;cl.ru=f.ru||'';cl.im=f.id||0;cl.ty=refType(f);cl.sug=[];renderColl()};sg.appendChild(b)})}
+ ti.oninput=function(){cl.t=ti.value;cl.ru='';cl.im=0;cl.sug=collSug(cl.t);showSug()};ad.appendChild(ti);ad.appendChild(sg);showSug();
  var yi=document.createElement('input');yi.placeholder='Год (необязательно)';yi.inputMode='numeric';yi.value=cl.y;yi.oninput=function(){cl.y=yi.value.replace(/\D/g,'').slice(0,4)};ad.appendChild(yi);
  var r2=el('div','row');r2.appendChild(csel(CTYPES,cl.ty,function(v){cl.ty=v}));r2.appendChild(csel(MEDIA,cl.md,function(v){cl.md=v}));ad.appendChild(r2);
  var li=document.createElement('input');li.placeholder='Где лежит (полка, коробка, диск, папка): необязательно';li.value=cl.lc;li.setAttribute('list','cllocs');li.oninput=function(){cl.lc=li.value};ad.appendChild(li);
  var dl=document.createElement('datalist');dl.id='cllocs';var ls={};A.forEach(function(c){if(c.loc)ls[c.loc]=1});Object.keys(ls).forEach(function(k){var o=document.createElement('option');o.value=k;dl.appendChild(o)});ad.appendChild(dl);
  var ab=el('button','pri','Добавить в коллекцию');var msg=el('div','m',cl.msg);cl.msg='';
- ab.onclick=function(){var r=collAdd(cl.t,cl.y,cl.ty,cl.md,cl.lc,cl.ru);if(r==='empty'){msg.textContent='Введите название'}else if(r==='dup'){msg.textContent='Такая запись уже есть в коллекции'}else{cl.msg='Добавлено: '+cl.t;cl.t='';cl.y='';cl.ru='';cl.sug=[];save();render()}};
+ ab.onclick=function(){var r=collAdd(cl.t,cl.y,cl.ty,cl.md,cl.lc,cl.ru,cl.im);if(r==='empty'){msg.textContent='Введите название'}else if(r==='dup'){msg.textContent='Такая запись уже есть в коллекции'}else{cl.msg='Добавлено: '+cl.t;cl.t='';cl.y='';cl.ru='';cl.im=0;cl.sug=[];save();render()}};
  var r3=el('div','row');r3.appendChild(ab);ad.appendChild(r3);ad.appendChild(msg);
  var dt=document.createElement('details');dt.appendChild(el('summary','','Добавить списком'));dt.appendChild(el('div','m','По одному названию на строке, год можно в конце: «Ронин 1998». Тип подставится из справочника, если фильм там найден. Носитель и место берутся из полей выше.'));
  var ta=document.createElement('textarea');ta.value=cl.bulk;ta.oninput=function(){cl.bulk=ta.value};dt.appendChild(ta);var bm=el('div','m','');
@@ -888,6 +888,7 @@ try{if(navigator.storage&&navigator.storage.persist)navigator.storage.persist()}
 <script src="sync.js"></script>
 <script src="inst.js"></script>
 <script src="base.js"></script>
+<script src="tmdb.js"></script>
 <script>if('serviceWorker' in navigator&&location.protocol.indexOf('http')===0){window.addEventListener('load',function(){navigator.serviceWorker.register('sw.js').catch(function(){})})}</script>
 </body>
 </html>
