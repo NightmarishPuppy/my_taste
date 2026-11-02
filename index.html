@@ -699,13 +699,14 @@ function swBind(card,lL,lR,st){var sx=0,sy=0,dx=0,drag=false,lock=false,pid=null
  function move(mx,my,ev){if(!drag)return;
   if(!lock){if(Math.abs(mx)>10&&Math.abs(mx)>Math.abs(my)*1.3){lock=true;card.classList.add('drag')}else if(Math.abs(my)>10){drag=false;say('Жест: вертикальный, это прокрутка');return}}
   if(lock){if(ev&&ev.cancelable)ev.preventDefault();dx=mx;card.style.transform='translateX('+dx+'px) rotate('+(dx/25)+'deg)';var o=Math.min(1,Math.abs(dx)/90);lR.style.opacity=dx>0?o:0;lL.style.opacity=dx<0?o:0;say('Жест: тяну '+(dx>0?'вправо':'влево')+' '+Math.round(Math.abs(dx))+' (нужно 90)')}}
- function end(){if(!drag)return;drag=false;card.classList.remove('drag');
+ function end(){if(!drag)return;drag=false;card.classList.remove('drag');if(lock)sw.nc=Date.now();
   if(lock&&Math.abs(dx)>90){var v=dx>0?1:-1;say('Жест: '+(v>0?'нравится':'не нравится'));card.style.transform='translateX('+(v*600)+'px) rotate('+(v*20)+'deg)';card.style.opacity='0';setTimeout(function(){swAct(v)},180)}
   else{if(lock)say('Жест: не дотянули до 90');card.style.transform='';lL.style.opacity=0;lR.style.opacity=0}lock=false}
- card.addEventListener('touchstart',function(e){sw.touch=true;if(e.target.closest('a,button'))return;var t=e.touches[0];sx=t.clientX;sy=t.clientY;dx=0;drag=true;lock=false;say('Жест: касание принято')},{passive:true});
+ card.addEventListener('click',function(e){if(sw.nc&&Date.now()-sw.nc<700){e.preventDefault();e.stopPropagation()}},true);
+ card.addEventListener('touchstart',function(e){sw.touch=true;if(e.target.closest('button'))return;var t=e.touches[0];sx=t.clientX;sy=t.clientY;dx=0;drag=true;lock=false;say('Жест: касание принято')},{passive:true});
  card.addEventListener('touchmove',function(e){var t=e.touches[0];move(t.clientX-sx,t.clientY-sy,e)},{passive:false});
  card.addEventListener('touchend',function(){sw.touch=false;end()});card.addEventListener('touchcancel',function(){sw.touch=false;say('Жест: отменён системой');end()});
- card.addEventListener('pointerdown',function(e){if(e.pointerType==='touch'||e.target.closest('a,button'))return;sx=e.clientX;sy=e.clientY;dx=0;drag=true;lock=false;pid=e.pointerId});
+ card.addEventListener('pointerdown',function(e){if(e.pointerType==='touch'||e.target.closest('button'))return;sx=e.clientX;sy=e.clientY;dx=0;drag=true;lock=false;pid=e.pointerId});
  card.addEventListener('pointermove',function(e){if(e.pointerType==='touch'||!drag)return;if(!lock&&Math.abs(e.clientX-sx)>10)try{card.setPointerCapture(pid)}catch(_){}move(e.clientX-sx,e.clientY-sy,e)});
  card.addEventListener('pointerup',function(e){if(e.pointerType!=='touch')end()});card.addEventListener('pointercancel',function(e){if(e.pointerType!=='touch')end()})}
 function renderSw(){var B=$('sw');if(!B||tab!=='sw')return;B.innerHTML='';
