@@ -39,13 +39,19 @@ if(iOS&&standalone){
   if(!/(^|\.)wikipedia\.org$/i.test(host))return;
   e.preventDefault();e.stopPropagation();var l=document.createElement('a');l.href='x-safari-'+h;l.rel='noopener';document.body.appendChild(l);l.click();setTimeout(function(){l.remove()},500)},true)}
 
-/* Версия приложения и принудительное обновление (сброс кэша и служебного скрипта) */
+/* Версия приложения: проверка обновления без лишней загрузки */
 (function(){var d=document.getElementById('s-data');if(!d||document.getElementById('vercard'))return;var c=document.createElement('div');c.className='c';c.id='vercard';
- c.innerHTML='<h2>Версия приложения</h2><div class="m">Версия: <b>'+(window.APP_VER||'?')+'</b>. Если после обновления на GitHub что-то не поменялось, нажмите кнопку: она сбросит сохранённые копии страницы и загрузит свежие. Оценки и база не затрагиваются.</div><div class="row"><button id="verbtn">Обновить приложение</button></div><div class="m" id="vermsg"></div>';
+ c.innerHTML='<h2>Версия приложения</h2><div class="m">Установлена версия: <b>'+(window.APP_VER||'?')+'</b>. Проверка смотрит только номер версии (несколько байт). Скачивание происходит, только если вышла новая. Оценки и база фильмов не затрагиваются.</div><div class="row"><button id="verbtn">Проверить обновление</button><button id="verre">Сбросить сохранённые копии</button></div><div class="m" id="vermsg"></div>';
  d.appendChild(c);
- document.getElementById('verbtn').onclick=function(){var m=document.getElementById('vermsg');m.textContent='Обновляю…';
-  var p=[];try{if(navigator.serviceWorker)p.push(navigator.serviceWorker.getRegistrations().then(function(rs){return Promise.all(rs.map(function(r){return r.unregister()}))}))}catch(e){}
+ var m=document.getElementById('vermsg');
+ function setM(t,k){m.className='m '+(k==='ok'?'syok':k==='err'?'syerr':'');m.textContent=t}
+ function reset(){var p=[];try{if(navigator.serviceWorker)p.push(navigator.serviceWorker.getRegistrations().then(function(rs){return Promise.all(rs.map(function(r){return r.unregister()}))}))}catch(e){}
   try{if(window.caches)p.push(caches.keys().then(function(ks){return Promise.all(ks.map(function(k){return caches.delete(k)}))}))}catch(e){}
-  Promise.all(p).catch(function(){}).then(function(){m.textContent='Готово, перезагружаю…';setTimeout(function(){location.replace(location.pathname+'?u='+Date.now())},400)})}})();
+  return Promise.all(p).catch(function(){}).then(function(){setTimeout(function(){location.replace(location.pathname+'?u='+Date.now())},400)})}
+ document.getElementById('verbtn').onclick=function(){if(navigator.onLine===false){setM('Нет связи: проверить не получится.','err');return}setM('Проверяю…','');
+  fetch('version.json?t='+Date.now(),{cache:'no-store'}).then(function(r){if(!r.ok)throw 0;return r.json()}).then(function(j){
+   if(j&&j.v===window.APP_VER){setM('✅ Установлена последняя версия ('+window.APP_VER+').','ok')}
+   else{setM('Найдена новая версия ('+(j&&j.v)+'). Обновляю…','');reset()}}).catch(function(){setM('⚠️ Не удалось проверить версию. Проверьте связь и попробуйте ещё раз.','err')})};
+ document.getElementById('verre').onclick=function(){if(!confirm('Сбросить сохранённые копии страницы и загрузить свежие (около 1 МБ)? Оценки и база не затрагиваются.'))return;setM('Сбрасываю…','');reset()}})();
 init();
 })();
