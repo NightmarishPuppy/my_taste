@@ -4,7 +4,7 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <title>Мой вкус</title>
-<script>window.APP_VER='2026-11-02 23:45'</script>
+<script>window.APP_VER='2026-11-03 15:45'</script>
 <link rel="manifest" href="manifest.webmanifest">
 <link rel="apple-touch-icon" href="apple-touch-icon.png">
 <meta name="theme-color" content="#3d5afe">
@@ -23,6 +23,15 @@ body{margin:0;background:var(--bg);color:var(--fg);font:17px/1.45 system-ui,sans
 main{max-width:640px;margin:auto;padding:12px}
 .tabs{display:grid;grid-template-columns:repeat(2,1fr);gap:6px;margin-bottom:12px}
 @media(min-width:560px){.tabs{grid-template-columns:repeat(4,1fr)}}
+@media(min-width:1000px){
+main{max-width:1240px;display:grid;grid-template-columns:260px minmax(0,1fr);column-gap:24px;align-items:start;padding:16px 24px}
+main>*{grid-column:2;min-width:0}
+main>.hd{grid-column:1/-1;grid-row:1}
+main>.tabs{grid-column:1;grid-row:2/span 40;grid-template-columns:1fr;position:sticky;top:12px;align-self:start;max-height:calc(100vh - 24px);overflow:auto}
+.tabs button{text-align:left;padding:10px 12px}
+.tmx{flex-direction:row!important;align-items:flex-start!important;gap:20px!important}
+.tmx img{max-width:42%!important;max-height:62vh!important}
+}
 .tabs button{padding:8px 6px;font-size:15px;line-height:1.25;text-align:center}
 .tabs button small{display:block;font-size:11px;font-weight:normal;opacity:.75;margin-top:2px}
 .tabs button.qs{grid-column:1/-1;background:#e8590c;border-color:#e8590c;color:#fff;font-size:17px;font-weight:bold}
