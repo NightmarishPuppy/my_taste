@@ -1,3 +1,4 @@
+function guessRepo(){try{var h=location.hostname,m=h.match(/^([^.]+)\.github\.io$/i),seg=location.pathname.split('/')[1];if(m&&seg)return m[1]+'/'+seg+'_private'}catch(e){}return ''}
 /* Синхронизация оценок с закрытым репозиторием GitHub (файл data.json).
    Правила: менялось только у меня -> отправляем; менялось только на GitHub -> забираем;
    менялось и там и тут -> объединяем (ничего не теряется) и отправляем. */
@@ -55,11 +56,12 @@ function setSt(t,k){status=t;statusErr=k;var e=document.getElementById('syst');i
 function lock(b){['sygo','synow'].forEach(function(id){var x=document.getElementById(id);if(x)x.disabled=b})}
 function ui(){var d=document.getElementById('s-data');if(!d||document.getElementById('sycard'))return;var c=document.createElement('div');c.className='c';c.id='sycard';
  c.innerHTML='<h2>Синхронизация с GitHub</h2><div class="m">Оценки автоматически сохраняются в вашем закрытом репозитории и подтягиваются на другом устройстве. Если данные на устройстве пропали, достаточно снова ввести токен.</div>'
- +'<div class="m">Репозиторий с данными (ИМЯ/РЕПОЗИТОРИЙ):</div><input id="syrepo" placeholder="NightmarishPuppy/my_taste_private" autocapitalize="off" autocorrect="off" spellcheck="false">'
+ +'<div class="m">Репозиторий с данными (ИМЯ/РЕПОЗИТОРИЙ):</div><input id="syrepo" placeholder="имя/репозиторий" autocapitalize="off" autocorrect="off" spellcheck="false">'
  +'<div class="m">Токен доступа:</div><input id="sytok" type="password" placeholder="github_pat_…" autocapitalize="off" autocorrect="off" spellcheck="false">'
+ +'<div class="m" style="font-size:12px;margin-top:-4px">Токен показывается один раз при создании. Потерян — <a href="https://github.com/settings/personal-access-tokens/new" target="_blank" rel="noopener noreferrer">создать новый</a> (Contents: Read and write, только репозиторий с данными) или <a href="https://github.com/settings/personal-access-tokens" target="_blank" rel="noopener noreferrer">открыть список и нажать Regenerate</a>.</div>'
  +'<div class="row"><button class="pri" id="sygo">Подключить и синхронизировать</button><button id="synow">Синхронизировать сейчас</button><button id="syoff">Отключить</button></div><div class="m" id="syst"></div>';
  d.insertBefore(c,d.firstChild);
- var r=document.getElementById('syrepo'),t=document.getElementById('sytok');r.value=SY.repo;t.value=SY.token?'••••••••':'';
+ var r=document.getElementById('syrepo'),t=document.getElementById('sytok');r.value=SY.repo||guessRepo();t.value=SY.token?'••••••••':'';
  document.getElementById('sygo').onclick=function(){var rv=r.value.trim().replace(/^https?:\/\/github\.com\//,'').replace(/\/+$/,''),tv=t.value.trim();if(!/^[\w.-]+\/[\w.-]+$/.test(rv)){setSt('Введите имя репозитория в виде ИМЯ/РЕПОЗИТОРИЙ','err');return}
   if(tv&&tv!=='••••••••')SY.token=tv;if(!SY.token){setSt('Вставьте токен','err');return}
   if(SY.repo!==rv){SY.sha=''}SY.repo=rv;if(!SY.sha)SY.dirty=Math.max(SY.dirty,1);SY.hist=[];sv();t.value='••••••••';sync(true,true)};
